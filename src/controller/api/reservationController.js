@@ -1,7 +1,10 @@
 const Reservation = require('../../model/Reservation');
 const BusSchedule = require('../../model/BusSchedule');
+const User = require('../../model/User');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
+const QRCode = require('qrcode');
+const nodemailer = require('nodemailer');
 
 exports.reserveSeats = async (req, res) => {
     const session = await mongoose.startSession();
@@ -56,25 +59,11 @@ exports.confirmReservation = async (req, res) => {
         if(!token) return res.status(401).json({message: 'Unauthorized'});
 
         const { userId } = jwt.verify(token, process.env.JWT_SECRET);
-        const { reservationId } = req.body;
+        const { reservationId, email } = req.body;
 
         if(!mongoose.Types.ObjectId.isValid(reservationId)){
             return res.status(400).json({ message: 'Invalid reservation ID' });
         }
-
-        // const reservationData = await Reservation.findById(reservationId);
-        // if (!reservationData) {
-        //     return res.status(404).json({ message: 'Reservation not found in the database' });
-        // }
-        // console.log('Reservation Data:', reservationData);
-
-        // console.log('User ID:', userId);
-        // console.log('Query conditions: ', {
-        //     _id: reservationId,
-        //     userId,
-        //     reservationStatus: 'Hold',
-        //     holdExpiresAt: { $gt: new Date() },
-        // });
 
         const reservation = await Reservation.findOneAndUpdate(
             { 
@@ -91,7 +80,50 @@ exports.confirmReservation = async (req, res) => {
             return res.status(404).json({message: 'Reservation not found or Already expired'});
         }
 
-        res.status(200).json({ message: 'Reservation Confiremed', reservation});
+        const user = await User.findById(userId);
+        if(!user || !user.email) {
+            return res.status(400).json({ message: 'User not found or email missing' });
+        }
+        console.log('User Data:', user);
+
+        // const qrCodeData = `Reservation ID: ${reservation._id}, User ID: ${userId}`;
+        // const qrCodeImage = await QRCode.toDataURL(qrCodeData);
+        
+        const qrCodeData = JSON.stringify({
+            id: reservation._id,
+            name: reservation.name,
+            date: reservation.date,
+        });
+
+        const qrCodeBase64 = await QRCode.toDataURL(qrCodeData);
+
+        const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+              user: process.env.EMAIL_USER, 
+              pass: process.env.EMAIL_PASS, 
+            },
+          });
+
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Reservation Confirmation',
+            html: `
+              <h3>Your Reservation is Confirmed!</h3>
+              <p>Reservation Details:</p>
+              <ul>
+                <li>Reservation ID: ${reservation._id}</li>
+                <li>Name: ${reservation.name}</li>
+                <li>Date: ${reservation.date}</li>
+              </ul>
+              <p>Below is your QR code. Please present it at the time of service:</p>
+              <img src="${qrCodeBase64}" alt="QR Code" />
+            `,
+        };
+        await transporter.sendMail(mailOptions);
+
+        res.status(200).json({ message: 'Reservation confirmed and QR code sent to email', reservation});
     } catch (error) {
         res.status(500).json({error: 'Failed to confirm reservation', details: error.message});
     }
