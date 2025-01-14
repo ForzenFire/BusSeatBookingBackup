@@ -5,6 +5,10 @@ exports.authenticate = async (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer', '').trim();
     console.log(token);
 
+    if (req.originalUrl.includes("/api-docs")) {
+        return next();
+    }
+    
     if(!token) {
         return res.status(401).json({ message: 'Access denied. Token not available'});
     }

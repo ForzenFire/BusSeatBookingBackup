@@ -1,6 +1,9 @@
 const express = require('express');
 const { register, login } = require('../api/authController');
 const router = express.Router();
+const { validateUser } = require('../middleware/validator/userValidator');
+const { validationResult } = require('express-validator');
+
 
 /**
  * @swagger
@@ -16,16 +19,25 @@ const router = express.Router();
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *               - role
  *             properties:
  *               username:
  *                 type: string
  *                 example: "kavindu"
  *               email:
  *                 type: string
+ *                 format: email
  *                 example: "kavindu@example.com"
  *               password:
  *                 type: string
  *                 example: "password123"
+ *               role:
+ *                 type: string
+ *                 example: "commuter"
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -33,6 +45,7 @@ const router = express.Router();
  *         description: Bad request
  */
 router.post('/register', register);
+
 
 /**
  * @swagger

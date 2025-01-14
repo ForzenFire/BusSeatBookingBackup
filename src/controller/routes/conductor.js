@@ -19,12 +19,21 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
+ *               nic:
+ *                 type: string
+ *                 example: "123456789V"
+ *               conductorId:
+ *                 type: string
+ *                 example: "COND-001"
  *               name:
  *                 type: string
  *                 example: "John Doe"
- *               licenseNumber:
+ *               contact:
  *                 type: string
- *                 example: "COND-12345"
+ *                 example: "123-456-7890"
+ *               address:
+ *                 type: string
+ *                 example: "123 Main Street"
  *     responses:
  *       201:
  *         description: Conductor created successfully
@@ -58,12 +67,21 @@ router.post('/', authenticate, authorize('admin'), createConductor);
  *                   id:
  *                     type: string
  *                     example: "64d3f4f1e39a1b00123abcde"
+ *                   nic:
+ *                     type: string
+ *                     example: "123456789V"
+ *                   conductorId:
+ *                     type: string
+ *                     example: "COND-001"
  *                   name:
  *                     type: string
  *                     example: "John Doe"
- *                   licenseNumber:
+ *                   contact:
  *                     type: string
- *                     example: "COND-12345"
+ *                     example: "123-456-7890"
+ *                   address:
+ *                     type: string
+ *                     example: "123 Main Street"
  *       401:
  *         description: Unauthorized (e.g., missing or invalid token)
  */
@@ -95,12 +113,21 @@ router.get('/', authenticate, getConductors);
  *                 id:
  *                   type: string
  *                   example: "64d3f4f1e39a1b00123abcde"
+ *                 nic:
+ *                   type: string
+ *                   example: "123456789V"
+ *                 conductorId:
+ *                   type: string
+ *                   example: "COND-001"
  *                 name:
  *                   type: string
  *                   example: "John Doe"
- *                 licenseNumber:
+ *                 contact:
  *                   type: string
- *                   example: "COND-12345"
+ *                   example: "123-456-7890"
+ *                 address:
+ *                   type: string
+ *                   example: "123 Main Street"
  *       401:
  *         description: Unauthorized (e.g., missing or invalid token)
  *       404:
@@ -130,12 +157,21 @@ router.get('/:id', authenticate, getConductorById);
  *           schema:
  *             type: object
  *             properties:
+ *               nic:
+ *                 type: string
+ *                 example: "987654321V"
+ *               conductorId:
+ *                 type: string
+ *                 example: "COND-002"
  *               name:
  *                 type: string
  *                 example: "Jane Doe"
- *               licenseNumber:
+ *               contact:
  *                 type: string
- *                 example: "COND-67890"
+ *                 example: "321-654-0987"
+ *               address:
+ *                 type: string
+ *                 example: "456 Elm Street"
  *     responses:
  *       200:
  *         description: Conductor updated successfully

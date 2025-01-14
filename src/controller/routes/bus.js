@@ -21,13 +21,13 @@ const router = express.Router();
  *             properties:
  *               licensePlate:
  *                 type: string
- *                 example: "XYZ-1234"
+ *                 example: "ND-1234"
  *               capacity:
  *                 type: integer
  *                 example: 40
  *               model:
  *                 type: string
- *                 example: "Volvo 7700"
+ *                 example: "Leyland 7700"
  *     responses:
  *       201:
  *         description: Bus created successfully
@@ -63,13 +63,13 @@ router.post('/', authenticate, authorize('admin'), createBus);
  *                     example: "64d3f4f1e39a1b00123abcde"
  *                   licensePlate:
  *                     type: string
- *                     example: "XYZ-1234"
+ *                     example: "ND-1234"
  *                   capacity:
  *                     type: integer
  *                     example: 40
  *                   model:
  *                     type: string
- *                     example: "Volvo 7700"
+ *                     example: "Leyland 7700"
  *       401:
  *         description: Unauthorized (e.g., missing or invalid token)
  */

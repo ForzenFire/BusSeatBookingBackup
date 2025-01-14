@@ -2,6 +2,7 @@ const bodyParser = require('body-parser');
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const helmet = require('helmet');
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDefinition = require('../docs/swaggerDefinition');
@@ -12,6 +13,7 @@ const app = express();
 
 app.use(cors());
 app.use(bodyParser.json());
+app.use(helmet());
 
 const options = {
     swaggerDefinition,
