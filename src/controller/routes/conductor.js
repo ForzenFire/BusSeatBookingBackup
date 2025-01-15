@@ -6,12 +6,14 @@ const router = express.Router();
 
 /**
  * @swagger
- * /api/conductors:
+ * /api/conductor:
  *   post:
  *     summary: Create a new conductor
  *     description: Allows an admin to create a new conductor.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Conductor
  *     requestBody:
  *       required: true
  *       content:
@@ -48,12 +50,14 @@ router.post('/', authenticate, authorize('admin'), createConductor);
 
 /**
  * @swagger
- * /api/conductors:
+ * /api/conductor:
  *   get:
  *     summary: Get all conductors
  *     description: Fetches a list of all conductors. Requires authentication.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Conductor
  *     responses:
  *       200:
  *         description: List of conductors
@@ -72,7 +76,7 @@ router.post('/', authenticate, authorize('admin'), createConductor);
  *                     example: "123456789V"
  *                   conductorId:
  *                     type: string
- *                     example: "COND-001"
+ *                     example: "C001"
  *                   name:
  *                     type: string
  *                     example: "John Doe"
@@ -89,12 +93,14 @@ router.get('/', authenticate, getConductors);
 
 /**
  * @swagger
- * /api/conductors/{id}:
+ * /api/conductor/{id}:
  *   get:
  *     summary: Get conductor details by ID
  *     description: Fetches details of a specific conductor by their ID.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Conductor
  *     parameters:
  *       - in: path
  *         name: id
@@ -137,12 +143,14 @@ router.get('/:id', authenticate, getConductorById);
 
 /**
  * @swagger
- * /api/conductors/{id}:
+ * /api/conductor/{id}:
  *   put:
  *     summary: Update conductor details
  *     description: Allows an admin to update the details of a specific conductor.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Conductor
  *     parameters:
  *       - in: path
  *         name: id
@@ -188,12 +196,14 @@ router.get('/:id', authenticate, authorize('admin'), updateConductor);
 
 /**
  * @swagger
- * /api/conductors/{id}:
+ * /api/conductor/{id}:
  *   delete:
  *     summary: Delete a conductor
  *     description: Allows an admin to delete a specific conductor.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Conductor
  *     parameters:
  *       - in: path
  *         name: id
@@ -211,6 +221,6 @@ router.get('/:id', authenticate, authorize('admin'), updateConductor);
  *       404:
  *         description: Conductor not found
  */
-router.get('/:id', authenticate, authorize('admin'), deleteConductor);
+router.delete('/:id', authenticate, authorize('admin'), deleteConductor);
 
 module.exports = router;

@@ -12,6 +12,8 @@ const router = express.Router();
  *     description: Allows an admin to create a new bus in the system.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Bus
  *     requestBody:
  *       required: true
  *       content:
@@ -19,15 +21,21 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               licensePlate:
+ *               busNumber:
  *                 type: string
  *                 example: "ND-1234"
- *               capacity:
+ *               seatingCapacity:
  *                 type: integer
  *                 example: 40
- *               model:
+ *               type:
  *                 type: string
- *                 example: "Leyland 7700"
+ *                 example: "Non-AC"
+ *               driverNic:
+ *                  type: string
+ *                  example: "12345678v"
+ *               conductorId:
+ *                  type: string
+ *                  example: "C001"
  *     responses:
  *       201:
  *         description: Bus created successfully
@@ -48,6 +56,8 @@ router.post('/', authenticate, authorize('admin'), createBus);
  *     description: Fetches a list of all buses. Requires authentication.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Bus
  *     responses:
  *       200:
  *         description: List of buses
@@ -83,6 +93,8 @@ router.get('/', authenticate, getBuses);
  *     description: Fetches details of a specific bus by its ID. Requires admin or operator authorization.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Bus
  *     parameters:
  *       - in: path
  *         name: id
@@ -127,11 +139,13 @@ router.get('/:id',authenticate, authorize('admin', 'operator'), getBusById);
  *     description: Allows an admin to update the details of a specific bus by its ID.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Bus
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: Bus Number
  *         required: true
- *         description: The ID of the bus to update.
+ *         description: The Bus Number of the bus to update.
  *         schema:
  *           type: string
  *     requestBody:
@@ -141,15 +155,18 @@ router.get('/:id',authenticate, authorize('admin', 'operator'), getBusById);
  *           schema:
  *             type: object
  *             properties:
- *               licensePlate:
- *                 type: string
- *                 example: "XYZ-5678"
- *               capacity:
- *                 type: integer
- *                 example: 50
- *               model:
- *                 type: string
- *                 example: "Mercedes-Benz Citaro"
+ *               seatingCapacity:
+ *                  type: integer
+ *                  example: 50
+ *               type:
+ *                  type: string
+ *                  example: "Non-AC"
+ *               driverNic:
+ *                  type: string
+ *                  example: "123456789v"
+ *               conductorId:
+ *                  type: string
+ *                  example: "C001"
  *     responses:
  *       200:
  *         description: Bus updated successfully
@@ -162,6 +179,6 @@ router.get('/:id',authenticate, authorize('admin', 'operator'), getBusById);
  *       404:
  *         description: Bus not found
  */
-router.get('/:id', authenticate, authorize('admin'), updateBus);
+router.put('/:id', authenticate, authorize('admin'), updateBus);
 
 module.exports = router;

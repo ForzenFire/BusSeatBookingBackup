@@ -12,6 +12,8 @@ const router = express.Router();
  *     description: Allows a user to temporarily reserve seats for a specific schedule.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *      - Reservation
  *     requestBody:
  *       required: true
  *       content:
@@ -21,12 +23,10 @@ const router = express.Router();
  *             properties:
  *               scheduleId:
  *                 type: string
- *                 example: "64d3f4f1e39a1b00123abcde"
- *               seatNumbers:
- *                 type: array
- *                 items:
- *                   type: string
- *                 example: ["A1", "A2"]
+ *                 example: "001"
+ *               seatsReserved:
+ *                 type: number
+ *                 example: "5"
  *     responses:
  *       200:
  *         description: Seats reserved successfully
@@ -47,6 +47,8 @@ router.post('/reserve', authenticate, reserveSeats);
  *     description: Finalizes a reservation, confirming the selected seats.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *      - Reservation
  *     requestBody:
  *       required: true
  *       content:
@@ -75,6 +77,8 @@ router.post('/confirm', authenticate, confirmReservation);
  *   get:
  *     summary: Get seat information for a schedule
  *     description: Fetches information about available and reserved seats for a specific schedule.
+ *     tags:
+ *      - Reservation
  *     parameters:
  *       - in: path
  *         name: scheduleId
@@ -113,6 +117,8 @@ router.get('/seat-info/:scheduleId', getSeatInfo);
  *   get:
  *     summary: Get reservation by ID
  *     description: Fetch details of a specific confirmed reservation by its ID.
+ *     tags:
+ *      - Reservation
  *     parameters:
  *       - in: path
  *         name: id
@@ -136,6 +142,8 @@ router.get('/:id', getReservationById);
  *   get:
  *     summary: Get all reservations
  *     description: Fetch all reservations including their status and schedule details.
+ *     tags:
+ *      - Reservation
  *     responses:
  *       200:
  *         description: All reservations retrieved successfully

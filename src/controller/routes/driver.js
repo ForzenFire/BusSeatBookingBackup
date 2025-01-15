@@ -12,6 +12,8 @@ const router = express.Router();
  *     description: Allows an admin to add a new driver.
  *     security:
  *       - BearerAuth: []
+ *     tags: 
+ *       - Driver
  *     requestBody:
  *       required: true
  *       content:
@@ -19,18 +21,18 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               name:
- *                 type: string
- *                 example: "John Doe"
  *               nic:
  *                 type: string
  *                 example: "123456789V"
- *               licenseNumber:
+ *               name:
  *                 type: string
- *                 example: "B12345678"
- *               phone:
+ *                 example: "John Doe"
+ *               contact:
  *                 type: string
  *                 example: "+1234567890"
+ *               address:
+ *                 type: string
+ *                 example: "123, Main Street"
  *     responses:
  *       201:
  *         description: Driver created successfully
@@ -51,6 +53,8 @@ router.post('/', authenticate, authorize('admin'), createDriver);
  *     description: Fetches a list of all drivers. Requires authentication.
  *     security:
  *       - BearerAuth: []
+ *     tags: 
+ *       - Driver
  *     responses:
  *       200:
  *         description: List of drivers
@@ -89,6 +93,8 @@ router.get('/', authenticate, getDrivers);
  *     description: Fetches details of a specific driver by their ID.
  *     security:
  *       - BearerAuth: []
+ *     tags: 
+ *       - Driver
  *     parameters:
  *       - in: path
  *         name: id
@@ -134,6 +140,8 @@ router.get('/:id', authenticate, authorize('admin'), getDriverById);
  *     description: Allows an admin to update details of a specific driver.
  *     security:
  *       - BearerAuth: []
+ *     tags: 
+ *       - Driver
  *     parameters:
  *       - in: path
  *         name: id

@@ -20,12 +20,12 @@ const { validationResult } = require('express-validator');
  *           schema:
  *             type: object
  *             required:
- *               - username
+ *               - name
  *               - email
  *               - password
  *               - role
  *             properties:
- *               username:
+ *               name:
  *                 type: string
  *                 example: "kavindu"
  *               email:

@@ -1,17 +1,19 @@
 const express = require('express');
-const { createBusSchedule, getBusSchedules, getBusSchedulesById, updateBusSchedule, deleteBusSchedule, } = require('../api/busScheduleController');
+const { createBusSchedule, getBusSchedules, getBusSchedulesById, updateBusSchedule, deleteBusSchedule } = require('../api/busScheduleController');
 const { authenticate, authorize } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
 /**
  * @swagger
- * /api/bus-schedules:
+ * /api/schedule:
  *   post:
  *     summary: Create a new bus schedule
  *     description: Allows an admin to create a new bus schedule.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Bus Schedule
  *     requestBody:
  *       required: true
  *       content:
@@ -19,20 +21,25 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               busId:
+ *               scheduleId:
  *                 type: string
- *                 example: "64d3f4f1e39a1b00123abcde"
+ *                 example: "001"
  *               routeId:
  *                 type: string
- *                 example: "5f47f72e5d6f1b3c2e64ef01"
- *               departureTime:
+ *                 example: "120"
+ *               busId:
  *                 type: string
- *                 format: date-time
- *                 example: "2024-01-01T08:00:00Z"
- *               arrivalTime:
+ *                 example: "ND-1234"
+ *               routeDate:
  *                 type: string
- *                 format: date-time
- *                 example: "2024-01-01T12:00:00Z"
+ *                 format: date
+ *                 example: "2025-01-01"
+ *               startingTime:
+ *                 type: string
+ *                 example: "08:00 AM"
+ *               closingTime:
+ *                 type: string
+ *                 example: "12:00 PM"
  *     responses:
  *       201:
  *         description: Bus schedule created successfully
@@ -43,16 +50,18 @@ const router = express.Router();
  *       403:
  *         description: Forbidden (e.g., insufficient permissions)
  */
-router.post('/', authenticate, authorize('admin'), createBusSchedule); 
+router.post('/', authenticate, authorize('admin'), createBusSchedule);
 
 /**
  * @swagger
- * /api/bus-schedules:
+ * /api/schedule:
  *   get:
  *     summary: Get all bus schedules
  *     description: Fetches a list of all bus schedules. Requires authentication.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Bus Schedule
  *     responses:
  *       200:
  *         description: List of bus schedules
@@ -63,36 +72,44 @@ router.post('/', authenticate, authorize('admin'), createBusSchedule);
  *               items:
  *                 type: object
  *                 properties:
- *                   id:
+ *                   scheduleId:
  *                     type: string
- *                     example: "64d3f4f1e39a1b00123abcde"
- *                   busId:
- *                     type: string
- *                     example: "64d3f4f1e39a1b00123abcde"
+ *                     example: "001"
  *                   routeId:
  *                     type: string
- *                     example: "5f47f72e5d6f1b3c2e64ef01"
- *                   departureTime:
+ *                     example: "120"
+ *                   busId:
  *                     type: string
- *                     format: date-time
- *                     example: "2024-01-01T08:00:00Z"
- *                   arrivalTime:
+ *                     example: "ND-1234"
+ *                   routeDate:
  *                     type: string
- *                     format: date-time
- *                     example: "2024-01-01T12:00:00Z"
+ *                     format: date
+ *                     example: "2025-01-01"
+ *                   startingTime:
+ *                     type: string
+ *                     example: "08:00 AM"
+ *                   closingTime:
+ *                     type: string
+ *                     example: "12:00 PM"
+ *                   status:
+ *                     type: string
+ *                     enum: ["Scheduled", "Canceled"]
+ *                     example: "Scheduled"
  *       401:
  *         description: Unauthorized (e.g., missing or invalid token)
  */
-router.get('/', authenticate, getBusSchedules);  
+router.get('/', authenticate, getBusSchedules);
 
 /**
  * @swagger
- * /api/bus-schedules/{id}:
+ * /api/schedule/{id}:
  *   get:
  *     summary: Get bus schedule details by ID
  *     description: Fetches details of a specific bus schedule by its ID.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Bus Schedule
  *     parameters:
  *       - in: path
  *         name: id
@@ -108,23 +125,29 @@ router.get('/', authenticate, getBusSchedules);
  *             schema:
  *               type: object
  *               properties:
- *                 id:
+ *                 scheduleId:
  *                   type: string
- *                   example: "64d3f4f1e39a1b00123abcde"
- *                 busId:
- *                   type: string
- *                   example: "64d3f4f1e39a1b00123abcde"
+ *                   example: "001"
  *                 routeId:
  *                   type: string
- *                   example: "5f47f72e5d6f1b3c2e64ef01"
- *                 departureTime:
+ *                   example: "120"
+ *                 busId:
  *                   type: string
- *                   format: date-time
- *                   example: "2024-01-01T08:00:00Z"
- *                 arrivalTime:
+ *                   example: "ND-1234"
+ *                 routeDate:
  *                   type: string
- *                   format: date-time
- *                   example: "2024-01-01T12:00:00Z"
+ *                   format: date
+ *                   example: "2025-01-01"
+ *                 startingTime:
+ *                   type: string
+ *                   example: "08:00 AM"
+ *                 closingTime:
+ *                   type: string
+ *                   example: "12:00 PM"
+ *                 status:
+ *                   type: string
+ *                   enum: ["Scheduled", "Canceled"]
+ *                   example: "Scheduled"
  *       401:
  *         description: Unauthorized (e.g., missing or invalid token)
  *       404:
@@ -134,12 +157,14 @@ router.get('/:id', authenticate, getBusSchedulesById);
 
 /**
  * @swagger
- * /api/bus-schedules/{id}:
+ * /api/schedule/{id}:
  *   put:
  *     summary: Update a bus schedule
  *     description: Allows an admin to update the details of a specific bus schedule.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Bus Schedule
  *     parameters:
  *       - in: path
  *         name: id
@@ -154,14 +179,20 @@ router.get('/:id', authenticate, getBusSchedulesById);
  *           schema:
  *             type: object
  *             properties:
- *               departureTime:
+ *               routeDate:
  *                 type: string
- *                 format: date-time
- *                 example: "2024-01-02T09:00:00Z"
- *               arrivalTime:
+ *                 format: date
+ *                 example: "2025-01-01"
+ *               startingTime:
  *                 type: string
- *                 format: date-time
- *                 example: "2024-01-02T13:00:00Z"
+ *                 example: "09:00 AM"
+ *               closingTime:
+ *                 type: string
+ *                 example: "01:00 PM"
+ *               status:
+ *                 type: string
+ *                 enum: ["Scheduled", "Canceled"]
+ *                 example: "Canceled"
  *     responses:
  *       200:
  *         description: Bus schedule updated successfully
@@ -174,16 +205,18 @@ router.get('/:id', authenticate, getBusSchedulesById);
  *       404:
  *         description: Bus schedule not found
  */
-router.put('/:id', authenticate, authorize('admin'), updateBusSchedule); 
+router.put('/:id', authenticate, authorize('admin'), updateBusSchedule);
 
 /**
  * @swagger
- * /api/bus-schedules/{id}:
+ * /api/schedule/{id}:
  *   delete:
  *     summary: Delete a bus schedule
  *     description: Allows an admin to delete a specific bus schedule.
  *     security:
  *       - BearerAuth: []
+ *     tags:
+ *       - Bus Schedule
  *     parameters:
  *       - in: path
  *         name: id
@@ -201,6 +234,6 @@ router.put('/:id', authenticate, authorize('admin'), updateBusSchedule);
  *       404:
  *         description: Bus schedule not found
  */
-router.delete('/:id', authenticate, authorize('admin'), deleteBusSchedule); 
+router.delete('/:id', authenticate, authorize('admin'), deleteBusSchedule);
 
 module.exports = router;
