@@ -1,5 +1,5 @@
 const BusSchedule = require('../../model/BusSchedule');
-const Route = require('../../model/routes');
+const Route = require('../../model/Routes');
 const Bus = require('../../model/Bus');
 const mongoose = require('mongoose');
 
