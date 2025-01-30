@@ -7,8 +7,8 @@ const swaggerDefinition = {
     },
     servers: [
         {
-            url: "http://localhost:4000",
-            description: "Development server",
+        //     url: "http://localhost:4000",
+            description: "Development server"
         },
     ],
     components: {

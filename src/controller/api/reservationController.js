@@ -6,6 +6,8 @@ const jwt = require('jsonwebtoken');
 const QRCode = require('qrcode');
 const nodemailer = require('nodemailer');
 
+const reservationQueue = new Map();
+
 exports.reserveSeats = async (req, res) => {
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -24,26 +26,28 @@ exports.reserveSeats = async (req, res) => {
 
         const reservations = await Reservation.find({ scheduleId: schedule._id }).session(session);
         const reservedSeats = reservations
-            .filter((r) => r.reservationStatus === 'Confirmed' || (r.reservationStatus === 'Hold' && r.holdExpiresAt > new Date() ))
+            .filter((r) => r.reservationStatus === 'Confirmed')
             .reduce((total, r) => total + r.seatsReserved, 0);
         
         if (seatsReserved > totalSeats - reservedSeats) {
             return res.status(400).json({message: 'Not enough seats availble'});
         }
 
-        const holdExpiresAt = new Date(Date.now() + 10*60*1000);
-        const heldReservation = new Reservation({
-            scheduleId: schedule._id,
+        const reservationId = new mongoose.Types.ObjectId().toString();
+
+        const expirationTime = setTimeout(() => {
+            reservationQueue.delete(reservationId);
+            console.log(`Reservation ${reservationId} expired and removed from the queue`);
+        }, 10*60*1000)
+
+        reservationQueue.set(reservationId, {
+            scheduleId,
             userId,
             seatsReserved,
-            reservationStatus: 'Hold',
-            holdExpiresAt,
+            expirationTime,
         });
-            await heldReservation.save({session});
 
-        await session.commitTransaction();
-        // session.endSession();
-        res.status(200).json({message: 'Seats held successfully. Complete the reservation within 10 minutes.', heldReservation});
+        res.status(200).json({message: 'Seats held successfully. Complete the reservation within 10 minutes.', reservationId});
 
     } catch (error) {
         await session.abortTransaction();
@@ -59,63 +63,55 @@ exports.confirmReservation = async (req, res) => {
         if(!token) return res.status(401).json({message: 'Unauthorized'});
 
         const { userId } = jwt.verify(token, process.env.JWT_SECRET);
-        const { reservationId, email } = req.body;
+        const { reservationId } = req.body;
 
-        if(!mongoose.Types.ObjectId.isValid(reservationId)){
-            return res.status(400).json({ message: 'Invalid reservation ID' });
+        const reservation = reservationQueue.get(reservationId);
+        if(!reservation) {
+            return res.status(404).json({message: 'Reservation not found or expired'});
         }
 
-        const reservation = await Reservation.findOneAndUpdate(
-            { 
-                _id: reservationId, 
-                userId, 
-                reservationStatus: 'Hold', 
-                holdExpiresAt: { $gt: new Date()},
-            },
-            { reservationStatus: 'Confirmed', holdExpiresAt: null },
-            { new: true }
-        );
-
-        if (!reservation) {
-            return res.status(404).json({message: 'Reservation not found or Already expired'});
+        if(reservation,userId !== userId) {
+            return res.status(403).json({message: 'Unauthorized to confirm this reservation'});
         }
 
-        const user = await User.findById(userId);
-        if(!user || !user.email) {
-            return res.status(400).json({ message: 'User not found or email missing' });
-        }
-        console.log('User Data:', user);
+        const confirmedReservation = new Reservation({
+            scheduleId: reservation.scheduleId,
+            userId: reservation.userId,
+            seatsReserved: reservation.seatsReserved,
+            reservationStatus: 'Confirmed',
+        });
+        await confirmedReservation.save();
 
-        // const qrCodeData = `Reservation ID: ${reservation._id}, User ID: ${userId}`;
-        // const qrCodeImage = await QRCode.toDataURL(qrCodeData);
+        clearTimeout(reservation.expirationTime)
+        reservationQueue.delete(reservationId);
         
         const qrCodeData = JSON.stringify({
-            id: reservation._id,
-            name: reservation.name,
-            date: reservation.date,
+            id: confirmedReservation._id,
+            userId: confirmedReservation.userId,
+            scheduleId: confirmedReservation.scheduleId,
         });
-
         const qrCodeBase64 = await QRCode.toDataURL(qrCodeData);
 
-        const transporter = nodemailer.createTransport({
+        const user = await User.findById(userId);
+        transporter = nodemailer.createTransport({
             service: 'Gmail',
             auth: {
               user: process.env.EMAIL_USER, 
               pass: process.env.EMAIL_PASS, 
             },
-          });
+        });
 
         const mailOptions = {
             from: process.env.EMAIL_USER,
-            to: email,
+            to: user.email,
             subject: 'Reservation Confirmation',
             html: `
               <h3>Your Reservation is Confirmed!</h3>
               <p>Reservation Details:</p>
               <ul>
-                <li>Reservation ID: ${reservation._id}</li>
-                <li>Name: ${reservation.name}</li>
-                <li>Date: ${reservation.date}</li>
+                <li>Reservation ID: ${confirmedReservation._id}</li>
+                <li>Name: ${confirmedReservation.name}</li>
+                <li>Date: ${confirmedReservation.date}</li>
               </ul>
               <p>Below is your QR code. Please present it at the time of service:</p>
               <img src="${qrCodeBase64}" alt="QR Code" />
@@ -129,15 +125,15 @@ exports.confirmReservation = async (req, res) => {
     }
 };
 
-exports.cleanupExpiredHolds = async () => {
-    const now = new Date();
-    try {
-        const result = await Reservation.deleteMany({ reservationStatus: 'Hold', holdExpiresAt: {$lt: now} });
-        console.log(`Expired holds cleaned up: ${result.deletedCount} reservations`);
-    } catch (error) {
-        console.log('Erro cleaning up expired holds', error);
-    }
-};
+// exports.cleanupExpiredHolds = async () => {
+//     const now = new Date();
+//     try {
+//         const result = await Reservation.deleteMany({ reservationStatus: 'Hold', holdExpiresAt: {$lt: now} });
+//         console.log(`Expired holds cleaned up: ${result.deletedCount} reservations`);
+//     } catch (error) {
+//         console.log('Erro cleaning up expired holds', error);
+//     }
+// };
 
 exports.getSeatInfo = async (req, res) => {
     try {

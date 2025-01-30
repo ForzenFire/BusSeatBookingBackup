@@ -45,9 +45,9 @@ app.get('/', (req, res) => {
     res.send('Welcome! Server is running');
 });
 
-setInterval(() => {
-    cleanupExpiredHolds();
-}, 10*60*1000 );
+// setInterval(() => {
+//     cleanupExpiredHolds();
+// }, 10*60*1000 );
 
 mongoose.connect(process.env.MONGO_URL, {
     useNewUrlParser: true,
