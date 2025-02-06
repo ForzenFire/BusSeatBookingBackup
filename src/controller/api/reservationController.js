@@ -86,9 +86,11 @@ exports.confirmReservation = async (req, res) => {
         reservationQueue.delete(reservationId);
         
         const qrCodeData = JSON.stringify({
-            id: confirmedReservation._id,
-            userId: confirmedReservation.userId,
+            reservationId: confirmedReservation._id,
+            userEmail: user.email,
+            seatsReserved: confirmedReservation.seatsReserved,
             scheduleId: confirmedReservation.scheduleId,
+            reservationDate: new Date(confirmedReservation.createdAt).toLocaleString(),
         });
         const qrCodeBase64 = await QRCode.toDataURL(qrCodeData);
 
@@ -109,9 +111,12 @@ exports.confirmReservation = async (req, res) => {
               <h3>Your Reservation is Confirmed!</h3>
               <p>Reservation Details:</p>
               <ul>
-                <li>Reservation ID: ${confirmedReservation._id}</li>
-                <li>Name: ${confirmedReservation.name}</li>
-                <li>Date: ${confirmedReservation.date}</li>
+                <li><strong>Reservation ID:</strong> ${confirmedReservation._id}</li>
+                <li><strong>Email:</strong> ${user.email}</li>
+                <li><strong>Name:</strong> ${user.name}</li>
+                <li><strong>Schedule ID:</strong> ${confirmedReservation.scheduleId}</li>
+                <li><strong>Seats Reserved:</strong> ${confirmedReservation.seatsReserved}</li>
+                <li><strong>Date:</strong> ${new Date(confirmedReservation.createdAt).toLocaleString()}</li>
               </ul>
               <p>Below is your QR code. Please present it at the time of service:</p>
               <img src="${qrCodeBase64}" alt="QR Code" />
@@ -198,5 +203,20 @@ exports.getReservationById = async (req, res) => {
     } catch (error) {
         console.error('Error fetching reservation by ID:', error);
         res.status(500).json({ message: 'Internal server error', error: error.message });
+    }
+};
+
+exports.getActiveReservations = (req, res) => {
+    try {
+        const activeReservations = Array.from(reservationQueue.entries()).map(([id, data]) => ({
+            reservationId: id,
+            scheduleId: data.scheduleId,
+            userId: data.userId,
+            seatsReserved: data.seatsReserved,
+        }));
+        res.status(200).json({activeReservations});
+    } catch (error) {
+        console.error('Error fetching active reservations:', error);
+        res.status(500).json({error: 'Internal server error'});
     }
 };

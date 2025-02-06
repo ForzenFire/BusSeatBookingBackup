@@ -1,5 +1,5 @@
 const express = require('express');
-const { reserveSeats, confirmReservation, getSeatInfo, getReservationById, getAllReservations } = require('../api/reservationController');
+const { reserveSeats, confirmReservation, getSeatInfo, getReservationById, getAllReservations, getActiveReservations } = require('../api/reservationController');
 const { authenticate } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -151,5 +151,7 @@ router.get('/:id', getReservationById);
  *         description: No reservations found
  */
 router.get('/', getAllReservations);
+
+router.get('/active-res', getActiveReservations);
 
 module.exports = router;
